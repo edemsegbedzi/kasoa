@@ -24,7 +24,7 @@
                 <label for="description">Description</label>
                 <textarea name="description" id="description" rows="5"><% if(editable){%><%=product.description%><%}%></textarea>
             </div>
-            <% if(editable) {%> <input type="hidden" name="productId" value="<%=product.id%>" <%}%>>
+            <% if(editable) {%> <input type="hidden" name="productId" value="<%=product.id%>" ><%}%>
             <button class="btn" type="submit"><% if(editable) {%>Update Product <%} else {%>Add Product<%}%></button>
         </form>
     </main>
