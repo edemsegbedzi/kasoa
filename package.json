@@ -10,6 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.19.0",
-    "ejs": "^2.6.2"
+    "ejs": "^2.6.2",
+    "mysql2": "^1.7.0",
+    "sequelize": "^5.17.0"
   }
 }

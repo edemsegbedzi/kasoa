@@ -2,24 +2,27 @@ const Product = require("../model/product")
 const Cart = require("../model/cart")
 
 exports.getProducts = (req,res,next) => {
-    Product.getProducts( products => {
-        res.render('shop/product-list',{
-            prods : products,
-            pageTitle : "All Products",
-            path : "/products"
-        })
+    Product.getProducts()
+    .then(([rows]) => {
+      res.render('shop/product-list',{
+        prods : rows,
+        pageTitle : "All Products",
+        path : "/products"
     })
-    
+    })
+    .catch(err => console.log(err));
 }
 exports.getProduct = (req, res, next) => {
     const productId = req.params.productId;
-    Product.getProductById(productId, product => {
+    Product.getProductById(productId).then(
+      ([product]) => {
         res.render('shop/product-detail', {
-            product : product,
-            pageTitle : product.title,
-            path : '/products'
-        })
-    })
+          product : product[0],
+          pageTitle : product[0].title,
+          path : '/products'
+      })
+      }).then((err) => {console.log(err);
+      })
 }
 
 exports.getCart = (req, res, next) => {
@@ -58,13 +61,15 @@ exports.getCheckout = (req,res,next) => {
 }
 
 exports.getIndex = (req, res, next) => {
-    Product.getProducts( products => {
-        res.render('shop/index',{
-            prods : products,
-            pageTitle : "Let's Shop",
-            path : "/"
-        })
+    Product.getProducts()
+    .then(([rows]) => {
+      res.render('shop/product-list',{
+        prods : rows,
+        pageTitle : "Let's Shop",
+        path : "/"
     })
+    })
+    .catch(err => console.log(err));
 }
 
 exports.postCartDeleteProduct = (req, res, next) => {
