@@ -6,20 +6,27 @@ exports.addProduct = (req,res,next) => {
 }
 exports.postProduct = (req,res,next) => {
     const {title,imageUrl,price,description} = req.body;
-    const product = new Product(null,title,imageUrl,price,description);
-    product.save();
-    res.redirect("/");
+    console.log(req.user);
+    
+    req.user.createProduct({
+        title : title,
+        imageUrl: imageUrl,
+        price : price,
+        description : description
+    }).then(result => {
+        res.redirect("/")
+    }).catch ( err => console.log(err))
 }
 
 
 exports.getProducts = (req,res,next) => {
-    Product.getProducts( products => {
+    req.user.getProducts().then(products => {
         res.render('admin/products',{
             prods : products,
             pageTitle : "Let's Shop",
             path : "/admin/products"
         })
-    })
+    } ).catch(err => console.log(err))
 }
 
 exports.editProduct  = (req,res,next) => {   
@@ -27,7 +34,7 @@ exports.editProduct  = (req,res,next) => {
 
     if(editable){
         const productId = req.params.productId;
-        Product.getProductById(productId, product => {
+        req.user.getProducts({where : {id : productId}}).then( product => {
             if(!product){
                 req.redirect("/")
             }
@@ -38,7 +45,7 @@ exports.editProduct  = (req,res,next) => {
                 editable: true,
                 product : product
             })
-        })
+        }).catch(err => console.log(err))
 
     }else{
         res.render('admin/edit-product',{pageTitle : "Add Product", path: "admin/add-product",editable: false})
@@ -57,6 +64,11 @@ exports.updateProduct = (req,res,next) => {
 
 exports.deleteProduct = (req,res,next) => {
     const productId = req.params.productId;
-    Product.deleteProduct(productId);
-    res.redirect("/admin/products")
+    Product.destroy({
+        where : {
+            id : productId
+        }
+    })
+    .then( res.redirect("/admin/productc")
+    .catch(console.log(err = console.error(err))))
 }

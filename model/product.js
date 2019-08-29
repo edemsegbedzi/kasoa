@@ -8,6 +8,7 @@ const Product = sequelize.define("product", {
         allowNull : false,
         primaryKey : true
     },
+    title : Sequilize.STRING,
     imageUrl : Sequilize.STRING,
     description : {
         type : Sequilize.STRING,
