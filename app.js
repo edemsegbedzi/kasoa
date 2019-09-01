@@ -9,6 +9,8 @@ const User = require("./model/user");
 const Product = require("./model/product")
 const Cart = require("./model/cart")
 const CartItem = require("./model/cart-item")
+const Order = require("./model/order")
+const OderItem = require("./model/oder-item")
 
 const adminRoutes = require("./routes/admin")
 const shopRoutes = require("./routes/shop")
@@ -42,11 +44,13 @@ User.hasOne(Cart);
 Cart.belongsTo(User);
 Product.belongsToMany(Cart, {through : CartItem})
 Cart.belongsToMany(Product, {through : CartItem})
-
+Order.belongsTo(User)
+User.hasMany(Order)
+Order.belongsToMany(Product, {through : OderItem})
 
 sequelize
 .sync()
-// .sync({force : true})
+//  .sync({force : true})
 .then( _ =>  User.findByPk(1))
 .then(user => {
     if(!user){
