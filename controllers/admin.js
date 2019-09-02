@@ -6,21 +6,16 @@ exports.addProduct = (req,res,next) => {
 }
 exports.postProduct = (req,res,next) => {
     const {title,imageUrl,price,description} = req.body;
-    console.log(req.user);
-    
-    req.user.createProduct({
-        title : title,
-        imageUrl: imageUrl,
-        price : price,
-        description : description
-    }).then(result => {
+    const product = new Product(title,price,description,imageUrl)
+
+    product.save().then(result => {
         res.redirect("/")
     }).catch ( err => console.log(err))
 }
 
 
 exports.getProducts = (req,res,next) => {
-    req.user.getProducts().then(products => {
+    Product.fetchAll().then(products => {
         res.render('admin/products',{
             prods : products,
             pageTitle : "Let's Shop",
