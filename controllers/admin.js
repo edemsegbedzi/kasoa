@@ -6,8 +6,7 @@ exports.addProduct = (req,res,next) => {
 }
 exports.postProduct = (req,res,next) => {
     const {title,imageUrl,price,description} = req.body;
-    const product = new Product(title,imageUrl,price,description)
-
+    const product = new Product(title,imageUrl,price,description,null, req.user._id)
     product.save().then(result => {
         res.redirect("/")
     }).catch ( err => console.log(err))
@@ -52,7 +51,7 @@ exports.editProduct  = (req,res,next) => {
 
 exports.updateProduct = (req,res,next) => {
     const {productId,title,imageUrl,price,description} = req.body;
-    const product = new Product(title,imageUrl,price,description,productId);    
+    const product = new Product(title,imageUrl,price,description,productId,req.user._id);    
     product.save();
     res.redirect("/");
 
