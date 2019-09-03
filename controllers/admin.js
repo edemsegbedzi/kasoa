@@ -6,7 +6,7 @@ exports.addProduct = (req,res,next) => {
 }
 exports.postProduct = (req,res,next) => {
     const {title,imageUrl,price,description} = req.body;
-    const product = new Product(title,price,description,imageUrl)
+    const product = new Product(title,imageUrl,price,description)
 
     product.save().then(result => {
         res.redirect("/")
@@ -29,7 +29,8 @@ exports.editProduct  = (req,res,next) => {
 
     if(editable){
         const productId = req.params.productId;
-        req.user.getProducts({where : {id : productId}}).then( product => {
+
+        Product.findById(productId).then( product => {
             if(!product){
                 req.redirect("/")
             }
@@ -51,7 +52,7 @@ exports.editProduct  = (req,res,next) => {
 
 exports.updateProduct = (req,res,next) => {
     const {productId,title,imageUrl,price,description} = req.body;
-    const product = new Product(productId,title,imageUrl,price,description);    
+    const product = new Product(title,imageUrl,price,description,productId);    
     product.save();
     res.redirect("/");
 
@@ -59,11 +60,7 @@ exports.updateProduct = (req,res,next) => {
 
 exports.deleteProduct = (req,res,next) => {
     const productId = req.params.productId;
-    Product.destroy({
-        where : {
-            id : productId
-        }
-    })
-    .then( res.redirect("/admin/productc")
+    Product.deleteById(productId)
+    .then( res.redirect("/admin/products")
     .catch(console.log(err = console.error(err))))
 }
