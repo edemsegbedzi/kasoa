@@ -57,6 +57,33 @@ class User {
          return db.collection("users").updateOne({_id : this._id},{$set : {cart : {items : updatedItems} }})
         }
      
+    createOrders() {
+        const db = getDb();
+        return this.getCart()
+        .then(cart => {
+            return {
+                items : cart,
+                user : {
+                    name : this.name,
+                    email : this.email,
+                    _id : this._id
+                }
+            }
+        })
+        .then( order => {
+           return db.collection("orders").insertOne(order)
+        })
+        .then( _ => {
+            this.cart.items = [];
+            return db.collection("users").updateOne({_id : this._id}, {$set : {cart : this.cart}})
+        })
+    }
+
+
+    getOrders(){
+        const db = getDb();
+        return db.collection("orders").find({'user._id' :this._id}).toArray()
+    }
 }
 
 module.exports = User;
