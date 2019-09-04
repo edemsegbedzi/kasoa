@@ -1,6 +1,5 @@
 
 const express = require('express')
-const sequelize = require("./util/database")
 
 const path = require("path")
 const parser = require("body-parser")
@@ -9,7 +8,10 @@ const mongoConnect = require("./util/database").mongoConnect
 
 
 const adminRoutes = require("./routes/admin")
-const shopRoutes = require("./routes/shop")
+const shopRoutes = require("./routes/shop");
+
+
+const User = require("./model/user")
 
 const errorController = require("./controllers/error")
 
@@ -22,12 +24,10 @@ app.use(express.static(path.join(__dirname, "public")))
 
 //Add user to each request
 app.use((req,res,next) => {
-//     User.findByPk(1).then((user) => {
-//         req.user = user;
-//         next();
-//     }).catch(err => console.log(err))
-
-    next();
+    User.findById("5d6eb5ca5712e870dfddad84").then((user) => {
+        req.user = new User(user.name ,user.email,user._id, user.cart);
+        next();
+    }).catch(err => console.log(err))
     
 })
 
