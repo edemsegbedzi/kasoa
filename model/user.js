@@ -49,7 +49,14 @@ class User {
         .then(products => products.map(p => {
             return {...p, quantity : this.cart.items.find(e => e.productId.toString() == p._id.toString()).quantity}
         }))    
+     }
+
+     removeItemFromCart(productId) {
+         const db = getDb();
+         const updatedItems = this.cart.items.filter(e => e.productId.toString() != productId.toString())
+         return db.collection("users").updateOne({_id : this._id},{$set : {cart : {items : updatedItems} }})
         }
+     
 }
 
 module.exports = User;
