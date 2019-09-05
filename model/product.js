@@ -1,41 +1,22 @@
-const getDb = require("../util/database").getDb;
-const mongodb = require("mongodb");
+const mongoose = require("mongoose")
 
-const Product = class {
-    constructor(title,imageUrl,price,description,id, userId){
-        this.title = title;
-        this.price = price;
-        this.description = description;
-        this.imageUrl = imageUrl;
-        this._id = id ? new mongodb.ObjectId(id) : null; 
-        this.userId = userId;
+const ProductSchema = new mongoose.Schema({
+    title : {
+        type : String,
+        required : true
+    },
+    price : {
+        type : Number,
+        required : true
+    },
+    imageUrl : {
+        type : String,
+        required : true
+    },
+    description : {
+        type : String,
+        required : true
     }
+})
 
-    save() {
-        const db = getDb()
-        if(this._id){
-            return db.collection("products").updateOne({_id : this._id},{$set : this})
-        }else{
-            return db.collection("products").insertOne(this)
-        }
-    }
-
-    static fetchAll () {
-        const db = getDb();
-        return db.collection("products").find().toArray();
-    }
-
-    static findById(productId){
-        const db = getDb();
-        return db.collection("products").find({_id : new mongodb.ObjectId(productId)}).next();
-    }
-
-    static deleteById(productId){
-        const db = getDb();
-        return db.collection("products").deleteOne({_id : new mongodb.ObjectId(productId)})
-    }
-}
-
-
-
-module.exports = Product;
+module.exports = mongoose.model("Product",ProductSchema)
