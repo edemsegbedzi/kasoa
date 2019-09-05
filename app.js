@@ -10,7 +10,7 @@ const adminRoutes = require("./routes/admin")
 const shopRoutes = require("./routes/shop");
 
 
-// const User = require("./model/user")
+const User = require("./model/user")
 
 const errorController = require("./controllers/error")
 
@@ -22,13 +22,13 @@ app.use(parser.urlencoded({extended : false}))
 app.use(express.static(path.join(__dirname, "public")))
 
 //Add user to each request
-// app.use((req,res,next) => {
-//     User.findById("5d6eb5ca5712e870dfddad84").then((user) => {
-//         req.user = new User(user.name ,user.email,user._id, user.cart);
-//         next();
-//     }).catch(err => console.log(err))
+app.use((req,res,next) => {
+    User.findById("5d7114ff07cbf55c19f1e5f7").then((user) => {
+        req.user = user;
+        next();
+    }).catch(err => console.log(err))
     
-// })
+})
 
 app.use("/admin",adminRoutes);
 app.use(shopRoutes);
@@ -38,5 +38,15 @@ app.use(shopRoutes);
 
 mongoose.connect("mongodb://localhost:27017/node-complete")
 .then( result => {
+    User.findOne().then((user) => {
+        if(!user){
+            const user = User({
+                name : "Edem",
+                email : "edem@test.com",
+                cart : []
+            })
+            user.save();
+        }
+    }).catch(err => console.log(err))
     app.listen(3000)
 }).catch(err => console.error(err))

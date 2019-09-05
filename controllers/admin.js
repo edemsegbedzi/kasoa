@@ -6,7 +6,13 @@ exports.addProduct = (req,res,next) => {
 }
 exports.postProduct = (req,res,next) => {
     const {title,imageUrl,price,description} = req.body;
-    const product = new Product({title : title,imageUrl : imageUrl,price : price,description : description})
+    const product = new Product({
+        title : title,
+        imageUrl : imageUrl,
+        price : price,
+        description : description,
+        userId : req.user
+    })
     product.save().then(result => {
         res.redirect("/")
     }).catch ( err => console.log(err))
@@ -65,5 +71,4 @@ exports.deleteProduct = (req,res,next) => {
     const productId = req.params.productId;
     Product.findByIdAndRemove(productId)
     .then( res.redirect("/admin/products"))
-
 }
