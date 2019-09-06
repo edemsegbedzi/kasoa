@@ -10,9 +10,9 @@
                                 <li>
                                     <h3> #<%=order._id%></h3>
                                     <ul>
-                                        <% order.items.forEach(product => { %>  
+                                        <% order.product.forEach(p => { %>  
                                             <li>
-                                                <%=product.title%>  (<%=product.quantity%>)</p>
+                                                <%=p.product.title%>  (<%=p.quantity%>)</p>
                                             </li>
                                         <% });%>
                                     </ul>

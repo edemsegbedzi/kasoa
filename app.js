@@ -23,7 +23,7 @@ app.use(express.static(path.join(__dirname, "public")))
 
 //Add user to each request
 app.use((req,res,next) => {
-    User.findById("5d7114ff07cbf55c19f1e5f7").then((user) => {
+    User.findById("5d72693bfe6d070dd469c951").then((user) => {
         req.user = user;
         next();
     }).catch(err => console.log(err))
@@ -40,11 +40,15 @@ mongoose.connect("mongodb://localhost:27017/node-complete")
 .then( result => {
     User.findOne().then((user) => {
         if(!user){
-            const user = User({
-                name : "Edem",
-                email : "edem@test.com",
-                cart : []
-            })
+            const user = new User({
+                name: 'Edem',
+                email: 'edem@test.com',
+                cart: {
+                    items : []
+                },
+                orders : []
+                
+              });
             user.save();
         }
     }).catch(err => console.log(err))
