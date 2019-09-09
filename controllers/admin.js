@@ -11,7 +11,8 @@ exports.postProduct = (req,res,next) => {
         imageUrl : imageUrl,
         price : price,
         description : description,
-        userId : req.user
+        userId : req.user,
+        isAuthenticated : req.session.isLoggedIn
     })
     product.save().then(result => {
         res.redirect("/")
@@ -24,7 +25,9 @@ exports.getProducts = (req,res,next) => {
         res.render('admin/products',{
             prods : products,
             pageTitle : "Let's Shop",
-            path : "/admin/products"
+            path : "/admin/products",
+            isAuthenticated : req.session.isLoggedIn
+
         })
     } ).catch(err => console.log(err))
 }
@@ -44,7 +47,8 @@ exports.editProduct  = (req,res,next) => {
                 pageTitle : "Add Product",
                 path: "admin/add-product",
                 editable: true,
-                product : product
+                product : product,
+                isAuthenticated : req.session.isLoggedIn
             })
         }).catch(err => console.log(err))
 

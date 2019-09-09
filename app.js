@@ -1,12 +1,21 @@
 
 const express = require('express')
+const session = require("express-session")
+const MongoStore = require("connect-mongodb-session")(session)
+
+const MONGO_DB_URI = "mongodb://localhost:27017/node-complete";
+
+const store  = new MongoStore({
+    uri : MONGO_DB_URI,
+    collection : "sessions"
+})
 
 const path = require("path")
 const parser = require("body-parser")
-
 const mongoose = require("mongoose")
 
 const adminRoutes = require("./routes/admin")
+const authRoutes = require("./routes/auth")
 const shopRoutes = require("./routes/shop");
 
 
@@ -20,37 +29,16 @@ app.set('views', 'views')
 
 app.use(parser.urlencoded({extended : false}))
 app.use(express.static(path.join(__dirname, "public")))
+app.use(session({secret: 'the big bad wolf', resave : false, saveUninitialized : false,store : store}))
 
-//Add user to each request
-app.use((req,res,next) => {
-    User.findById("5d72693bfe6d070dd469c951").then((user) => {
-        req.user = user;
-        next();
-    }).catch(err => console.log(err))
-    
-})
 
 app.use("/admin",adminRoutes);
+app.use(authRoutes)
 app.use(shopRoutes);
 
 // app.use(errorController.notFound);
 
-
-mongoose.connect("mongodb://localhost:27017/node-complete")
+mongoose.connect(MONGO_DB_URI)
 .then( result => {
-    User.findOne().then((user) => {
-        if(!user){
-            const user = new User({
-                name: 'Edem',
-                email: 'edem@test.com',
-                cart: {
-                    items : []
-                },
-                orders : []
-                
-              });
-            user.save();
-        }
-    }).catch(err => console.log(err))
     app.listen(3000)
 }).catch(err => console.error(err))

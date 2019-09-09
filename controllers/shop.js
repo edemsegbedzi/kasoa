@@ -8,7 +8,8 @@ exports.getProducts = (req,res,next) => {
       res.render('shop/product-list',{
         prods : products,
         pageTitle : "All Products",
-        path : "/products"
+        path : "/products",
+        isAuthenticated : req.session.isLoggedIn
     })
     })
     .catch(err => console.log(err));
@@ -20,7 +21,8 @@ exports.getProduct = (req, res, next) => {
         res.render('shop/product-detail', {
           product : product,
           pageTitle : product.title,
-          path : '/products'
+          path : '/products',
+          isAuthenticated : req.session.isLoggedIn
       })
       }).then((err) => {console.log(err);
       })
@@ -34,7 +36,8 @@ exports.getCart = (req, res, next) => {
       res.render('shop/cart', {
         path: '/cart',
         pageTitle: 'Your Cart',
-        products: user.cart.items
+        products: user.cart.items,
+        isAuthenticated : req.session.isLoggedIn
       });
     }
   )
@@ -54,7 +57,12 @@ exports.addToCart = (req, res, next) => {
 }
 exports.getOrders = (req, res ,next ) => {
     Order.find({'user.userId' : req.user._id}).then((orders) => {
-      res.render("shop/orders",{pageTitle: "My Cart", path : "/orders", orders : orders});
+      res.render("shop/orders",
+      {pageTitle: "My Cart",
+       path : "/orders", 
+       orders : orders,
+       isAuthenticated : req.session.isLoggedIn
+      });
     }).catch(err => console.log(err))
 }
 exports.postOrder = (req,res,next) => {
@@ -89,7 +97,8 @@ exports.getIndex = (req, res, next) => {
       res.render('shop/product-list',{
         prods : products,
         pageTitle : "Let's Shop",
-        path : "/"
+        path : "/",
+        isAuthenticated : req.session.isLoggedIn 
     })
     })
     .catch(err => console.log(err));
