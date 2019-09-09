@@ -25,6 +25,7 @@
                 <textarea name="description" id="description" rows="5"><% if(editable){%><%=product.description%><%}%></textarea>
             </div>
             <% if(editable) {%> <input type="hidden" name="productId" value="<%=product._id%>" ><%}%>
+            <input type="hidden" name="_csrf" value="<%= csrfToken%>">
             <button class="btn" type="submit"><% if(editable) {%>Update Product <%} else {%>Add Product<%}%></button>
         </form>
     </main>

@@ -2,6 +2,8 @@
 const express = require('express')
 const session = require("express-session")
 const MongoStore = require("connect-mongodb-session")(session)
+const csrf = require("csurf")
+const flash = require("connect-flash")
 
 const MONGO_DB_URI = "mongodb://localhost:27017/node-complete";
 
@@ -31,6 +33,15 @@ app.use(parser.urlencoded({extended : false}))
 app.use(express.static(path.join(__dirname, "public")))
 app.use(session({secret: 'the big bad wolf', resave : false, saveUninitialized : false,store : store}))
 
+//csrf should be afer session always and before request handlers
+const csrfProtection = csrf();
+app.use(csrfProtection);
+app.use((req,res,next) => {
+    res.locals.isAuthenticated = req.session.isLoggedIn;
+    res.locals.csrfToken = req.csrfToken();
+    next();
+})
+app.use(flash())
 
 app.use("/admin",adminRoutes);
 app.use(authRoutes)
