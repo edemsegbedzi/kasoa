@@ -21,7 +21,7 @@ exports.postProduct = (req,res,next) => {
 
 
 exports.getProducts = (req,res,next) => {
-    Product.find().then(products => {
+    Product.find({userId : req.user._id}).then(products => {
         res.render('admin/products',{
             prods : products,
             pageTitle : "Let's Shop",
@@ -38,18 +38,20 @@ exports.editProduct  = (req,res,next) => {
     if(editable){
         const productId = req.params.productId;
 
-        Product.findById(productId).then( product => {
+        Product.findOne({_id : productId, userId : req.user._id}).then( product => {
             if(!product){
-                req.redirect("/")
+               return res.redirect("/")
+            }else {
+                res.render('admin/edit-product',
+                {
+                    pageTitle : "Add Product",
+                    path: "admin/add-product",
+                    editable: true,
+                    product : product,
+                    isAuthenticated : req.session.isLoggedIn
+                })
             }
-            res.render('admin/edit-product',
-            {
-                pageTitle : "Add Product",
-                path: "admin/add-product",
-                editable: true,
-                product : product,
-                isAuthenticated : req.session.isLoggedIn
-            })
+           
         }).catch(err => console.log(err))
 
     }else{
@@ -73,6 +75,6 @@ exports.updateProduct = (req,res,next) => {
 
 exports.deleteProduct = (req,res,next) => {
     const productId = req.params.productId;
-    Product.findByIdAndRemove(productId)
+    Product.deleteOne({_id : productId , userId : req.user._id})
     .then( res.redirect("/admin/products"))
 }

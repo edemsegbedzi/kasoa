@@ -1,4 +1,4 @@
-
+require('dotenv').config()
 const express = require('express')
 const session = require("express-session")
 const MongoStore = require("connect-mongodb-session")(session)
@@ -42,6 +42,18 @@ app.use((req,res,next) => {
     next();
 })
 app.use(flash())
+
+app.use((req, res, next) => {
+    if (!req.session.user) {
+      return next();
+    }
+    User.findById(req.session.user._id)
+      .then(user => {
+        req.user = user;
+        next();
+      })
+      .catch(err => console.log(err));
+  });
 
 app.use("/admin",adminRoutes);
 app.use(authRoutes)

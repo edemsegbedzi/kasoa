@@ -1,8 +1,10 @@
 const User = require("../model/user")
+const crypto = require("crypto")
 const bycrpt = require("bcryptjs")
 const nodeMailer = require("nodemailer")
 const sendGridTransporter = require("nodemailer-sendgrid-transport")
 const SENDGRID_API_KEY =  process.env.SENDGRID_API_KEY;
+
 
 const mailer = nodeMailer.createTransport(sendGridTransporter({
   auth :{
@@ -82,7 +84,7 @@ exports.postSignup = (req, res, next) => {
             from : "hello@kasoa.com",
             subject : "Confirmation of Signup",
             html : "<h1>Your account on Kasoa has been succesfully created"
-          }, ((r,e)=> {console.log("oh",r,e)}))
+          })
           
       })
       })
@@ -90,7 +92,110 @@ exports.postSignup = (req, res, next) => {
   })
 }
 
+exports.getReset = (req,res,next) => {
+  let message = req.flash("error");
+  if(message.length > 0){
+    message = message[0]
+  }else {
+    message = null;
+  }
+    return res.render("auth/reset", {
+        pageTitle : "Reset Password",
+        path : "/reset",
+        isAuthenticated : req.session.isLoggedIn,
+        errorMessage : message
+    })
+}
 
+
+exports.postReset = (req,res,next) => {
+  const email = req.body.email;
+  User.findOne({email : email})
+  .then(user => {
+    if(!user){
+      req.flash("error","No user found with email provided");
+     return res.redirect("/reset")
+    }else {
+      crypto.randomBytes(32 , (err, buff)=> {
+        if(err) { 
+          console.error(err)
+        }else{
+          const token = buff.toString("hex")
+          user.resetToken = token;
+          user.resetTokenExpiration = Date.now() + 3600000;
+          user.save().then(_ => {
+            res.redirect("/");
+            mailer.sendMail({
+              to : email,
+              from : "hello@kasoa.com",
+              subject : "Password Reset",
+              html : `
+                  <p> You have request a password reset </p>
+                  <p> Kindly click the <a href="http://localhost:3000/reset/${token}">link</a> to reset Password.
+                  <hr>
+                  <p> Ignore this email if you didnot request for a password reset.</p>
+              `
+            },(err,info) => console.log(err,info))
+            
+          }
+
+          )
+        }
+      })
+
+    }
+  })
+ .catch( err => console.error(err))
+}
+
+exports.getNewPassword = (req,res,next) => {
+  const token = req.params.token;
+  User.findOne({resetToken : token})
+  .then(user => {
+    if(!user){
+      return res.render("auth/reset", {
+        pageTitle : "Reset Password",
+        path : "/reset",
+        isAuthenticated : req.session.isLoggedIn,
+        errorMessage : "Password reset failed"
+    })
+      
+    }else{
+      if(user.resetTokenExpiration < Date.now){
+        return res.render("auth/reset", {
+          pageTitle : "Reset Password",
+          path : "/reset",
+          isAuthenticated : req.session.isLoggedIn,
+          errorMessage : "Reset password token has expired"
+      })
+      }else{
+        return res.render("auth/new-password", {
+          pageTitle : "Reset Password",
+          path : "/new-password",
+          isAuthenticated : req.session.isLoggedIn,
+          errorMessage : null,
+          userId : user._id.toString(),
+          token : token
+      })
+      }
+    }
+  } 
+  )
+}
+
+exports.postNewPassword = (req,res,next) => {
+  const userId = req.body.userId;
+  const token = req.body.token;
+  const newPassword = req.body.password;
+  User.findOne({_id : userId, resetToken :token , resetTokenExpiration : {$gt : Date.now()} }).then(user => {
+    bycrpt.hash(newPassword,12).then(hash => {
+      user.password= hash;
+      user.resetToken = undefined,
+      user.resetTokenExpiration = undefined
+      user.save().then( _ => res.redirect("/login"))
+    })
+  })
+}
 exports.postLogout = (req,res,next) => {
     req.session.destroy()
     return res.redirect("/")
