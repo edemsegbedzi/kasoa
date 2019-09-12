@@ -1,5 +1,15 @@
 const User = require("../model/user")
 const bycrpt = require("bcryptjs")
+const nodeMailer = require("nodemailer")
+const sendGridTransporter = require("nodemailer-sendgrid-transport")
+
+const mailer = nodeMailer.createTransport(sendGridTransporter({
+  auth :{
+    api_key : "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",
+  }
+
+}))
+
 exports.getLogin = (req,res,next) => {
   let message = req.flash("error");
   if(message.length > 0){
@@ -64,7 +74,16 @@ exports.postSignup = (req, res, next) => {
           password : hash,
           cart : {items : []}
         });
-        u.save().then( _ => res.redirect("/login"))
+       u.save().then( _ => {
+          res.redirect("/login") 
+          mailer.sendMail({
+            to : email,
+            from : "hello@kasoa.com",
+            subject : "Confirmation of Signup",
+            html : "<h1>Your account on Kasoa has been succesfully created"
+          }, ((r,e)=> {console.log("oh",r,e)}))
+          
+      })
       })
     }
   })
