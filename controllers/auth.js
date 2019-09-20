@@ -1,4 +1,5 @@
 const User = require("../model/user")
+const {validationResult} = require("express-validator")
 const crypto = require("crypto")
 const bycrpt = require("bcryptjs")
 const nodeMailer = require("nodemailer")
@@ -24,26 +25,51 @@ exports.getLogin = (req,res,next) => {
         pageTitle : "Login",
         path : "/login",
         isAuthenticated : req.session.isLoggedIn,
-        errorMessage : message
+        errorMessage : message,
+        validationError : [],
+        oldInput : {
+          email : ""
+        }
     })
 }
 exports.postLogin = (req,res,next) => {
-    User.findOne({email : req.body.email})
+  const {email,password} = req.body
+    User.findOne({email : email})
     .then(user => {
-      bycrpt.compare(req.body.password,user.password)
-      .then(response => {
-        if(response){
-          req.session.isLoggedIn = true;
-          req.session.user = user;
-          req.session.save(err => {
-          console.log(err);
-          res.redirect('/');
-          });
-        }else {
-          req.flash("error", "Invalid email / password")
-          return res.redirect("/login")
-        }
+      if(user){
+        bycrpt.compare(password,user.password)
+        .then(response => {
+          if(response){
+            req.session.isLoggedIn = true;
+            req.session.user = user;
+            req.session.save(err => {
+            res.redirect('/');
+            });
+          }else {
+            return res.render("auth/login", { 
+              pageTitle : "Login",
+              path : "/login",
+              isAuthenticated : req.session.isLoggedIn,
+              errorMessage : "Invalid username / password",
+              oldInput : {
+                email : email
+              },
+              validationError : validationResult(req).array()
+          })
+          }
+        })
+      }else {
+        return res.render("auth/login", { 
+          pageTitle : "Login",
+          path : "/login",
+          isAuthenticated : req.session.isLoggedIn,
+          errorMessage : "Invalid username / password",
+          oldInput : {
+            email : email
+          },
+          validationError : validationResult(req).array()
       })
+      }
       
     })
     .catch(err => console.log(err));
@@ -60,16 +86,31 @@ exports.getSignup = (req,res,next) => {
     pageTitle : "Sign Up",
     path : "/signup",
     isAuthenticated : req.session.isLoggedIn,
-    errorMessage : message
+    errorMessage : message,
+    oldInput : {
+      email : "",
+      password : "",
+      confirmPassword : ""
+    },
+    validationError :[]
 })}
 exports.postSignup = (req, res, next) => {
-  const {email,password} = req.body;
-  User.findOne({email : email}).
-  then(user => {
-    if(user){
-      req.flash("error", "User email Aleady exits")
-     return res.redirect("/login")
-    }else {
+  const {email,password,confirmPassword} = req.body;
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).render("auth/signup", {
+      pageTitle : "Sign Up",
+      path : "/signup",
+      isAuthenticated : req.session.isLoggedIn,
+      errorMessage : errors.array()[0].msg,
+      oldInput : {
+        email : email,
+        password : password,
+        confirmPassword: confirmPassword
+      },
+      validationError : errors.array()
+  });
+  }
       bycrpt.hash(password,12).then(hash => {
         const u =new User({
           name : "Random User",
@@ -89,8 +130,6 @@ exports.postSignup = (req, res, next) => {
       })
       })
     }
-  })
-}
 
 exports.getReset = (req,res,next) => {
   let message = req.flash("error");
@@ -166,7 +205,7 @@ exports.getNewPassword = (req,res,next) => {
           pageTitle : "Reset Password",
           path : "/reset",
           isAuthenticated : req.session.isLoggedIn,
-          errorMessage : "Reset password token has expired"
+          errorMessage : "Reset password token has expired",
       })
       }else{
         return res.render("auth/new-password", {

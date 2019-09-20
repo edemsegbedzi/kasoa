@@ -6,22 +6,23 @@
 <body>
    <%- include('../includes/navigation.ejs') %>
 
-    <main>
-            <% if (errorMessage) { %>
+    <main>       
+        <% if (errorMessage) { %>
                 <div class="user-message user-message--error"><%= errorMessage %></div>
             <% } %>
         <form class="login-form" action="/signup" method="POST">
             <div class="form-control">
                 <label for="email">Email</label>
-                <input type="email" name="email" id="email">
+                <input class="<%= validationError.find(e => e.param == 'email')? 'invalid' : ''%>" name="email" id="email" value="<%=oldInput.email%>">
             </div>
             <div class="form-control">
                 <label for="password">Password</label>
-                <input type="password" name="password" id="password">
+                <input  class="<%= validationError.find(e => e.param == 'password')? 'invalid' : ''%>"  type="password" name="password" id="password" value="<%=oldInput.password%>">
             </div>
             <div class="form-control">
                 <label for="confirm_password">Confirm Password</label>
-                <input type="confirm_password" name="confirm_password" id="password">
+                <input type="password" name="confirmPassword" id="confirm_password
+                ">
             </div>
             <input type="hidden" name="_csrf" value="<%= csrfToken%>">
             <button class="btn" type="submit">Sign Up</button>
