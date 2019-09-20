@@ -21,14 +21,14 @@ router.post("/signup",[
            }
            return true;
        })
-    }),
-    check("password", "password should six digits long and Alpha numberic").isLength({min : 6}),
+    }).normalizeEmail(),
+    check("password", "password should six digits long and Alpha numberic").isLength({min : 6}).trim(),
     check("confirmPassword").custom( (value ,{req})=> {
         if(value !== req.body.password){
             throw new Error("Password have to match")
         }
         return true
-    })
+    }).trim()
 ], authController.postSignup)
 
 
