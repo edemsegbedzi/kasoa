@@ -59,7 +59,9 @@ app.use("/admin",adminRoutes);
 app.use(authRoutes)
 app.use(shopRoutes);
 
-// app.use(errorController.notFound);
+app.use(errorController.notFound);
+app.use(errorController.serverError);
+
 
 mongoose.connect(MONGO_DB_URI)
 .then( result => {

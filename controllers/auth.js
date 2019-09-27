@@ -184,8 +184,11 @@ exports.postReset = (req,res,next) => {
 
     }
   })
- .catch( err => console.error(err))
-}
+  .catch ( err => {
+    const error = new Error(err)
+    error.httpStatusCode = 500;
+    next(error);
+})}
 
 exports.getNewPassword = (req,res,next) => {
   const token = req.params.token;

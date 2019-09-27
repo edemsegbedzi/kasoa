@@ -6,3 +6,12 @@ exports.notFound =(req,res) => {
         isAuthenticated : req.session.isLoggedIn
     })
 }
+
+exports.serverError =(error,req,res,next) => {
+    res.status(500).render('500',
+    {
+        pageTitle : 'An Error Occured, we are fixing it',
+        path : '',
+        isAuthenticated : req.session.isLoggedIn
+    })
+}

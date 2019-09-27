@@ -40,7 +40,11 @@ exports.postProduct = (req,res,next) => {
     })
     product.save().then(result => {
         res.redirect("/")
-    }).catch ( err => console.log(err))
+    }).catch ( err => {
+        const error = new Error(err)
+        error.httpStatusCode = 500;
+        next(error);
+    })
 }
 
 
@@ -79,7 +83,11 @@ exports.editProduct  = (req,res,next) => {
                 })
             }
            
-        }).catch(err => console.log(err))
+        }).catch ( err => {
+            const error = new Error(err)
+            error.httpStatusCode = 500;
+            next(error);
+        })
 
     }else{
         res.render('admin/edit-product',

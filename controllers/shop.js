@@ -101,12 +101,18 @@ exports.getIndex = (req, res, next) => {
         isAuthenticated : req.session.isLoggedIn 
     })
     })
-    .catch(err => console.log(err));
-}
+    .catch ( err => {
+      const error = new Error(err)
+      error.httpStatusCode = 500;
+      next(error);
+  })}
 
 exports.postCartDeleteProduct = (req, res, next) => {
     const prodId = req.body.productId;
     req.user.removeItemFromCart(prodId)
     .then( _ => res.redirect("/cart"))
-    .catch(err => console.log(err))
-  };
+    .catch ( err => {
+      const error = new Error(err)
+      error.httpStatusCode = 500;
+      next(error);
+  })  };
