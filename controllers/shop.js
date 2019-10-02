@@ -1,6 +1,10 @@
+const fs = require("fs")
+const pdfDocument = require("pdfkit")
+
+
 const Product = require("../model/product")
-// const Cart = require("../model/cart")
 const Order = require("../model/order")
+
 
 exports.getProducts = (req,res,next) => {
     Product.find()
@@ -32,7 +36,6 @@ exports.getCart = (req, res, next) => {
 
   req.user.populate('cart.items.productId').execPopulate().then(user => 
     {
-      console.log(user.cart.items);
       res.render('shop/cart', {
         path: '/cart',
         pageTitle: 'Your Cart',
@@ -116,3 +119,36 @@ exports.postCartDeleteProduct = (req, res, next) => {
       error.httpStatusCode = 500;
       next(error);
   })  };
+
+
+  exports.getInvoice = (req,res,next) => {
+    const orderId = req.params.orderId;
+    Order.findById(orderId)
+    .then(order => {
+      if(!order){
+        return next("No Oder Found");
+      }else if (! order.user.userId.equals(req.session.user._id)){
+        return next("UnAuthorized")
+      }
+      const invoiceName = "invoice-"+order._id+".pdf"
+      res.setHeader("Content-Type","application/pdf");
+      res.setHeader('Content-Disposition','attachement; filename="'+invoiceName+'"')
+      const doc = new pdfDocument();
+      doc.pipe(fs.createWriteStream("data/invoices/"+invoiceName));
+      doc.pipe(res);
+
+      doc.fontSize(24).text("Invoice")
+      doc.text("------------------")
+      order.product.forEach(o => {
+          doc.fontSize(13).text(`
+          ${o.product.title} x ${o.quantity}  ${o.product.price*o.quantity} 
+          `)
+        
+      });
+     doc.fontSize(20).text("Total - "+ order.product.reduce((total,val) => total +  val.quantity * val.product.price ,0))
+     doc.end();
+
+      
+    })
+    .catch(err => console.log(err))
+  }
