@@ -8,6 +8,7 @@ exports.notFound =(req,res) => {
 }
 
 exports.serverError =(error,req,res,next) => {
+    console.error(error)
     res.status(500).render('500',
     {
         pageTitle : 'An Error Occured, we are fixing it',

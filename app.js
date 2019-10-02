@@ -4,6 +4,7 @@ const session = require("express-session")
 const MongoStore = require("connect-mongodb-session")(session)
 const csrf = require("csurf")
 const flash = require("connect-flash")
+const multer = require("multer")
 
 const MONGO_DB_URI = "mongodb://localhost:27017/node-complete";
 
@@ -16,6 +17,25 @@ const path = require("path")
 const parser = require("body-parser")
 const mongoose = require("mongoose")
 
+const fileFilter = (req,file,cb) => {
+  if(["image/png","image/jpeg","image/gif","image/jpg"].includes(file.mimetype)){
+    cb(null,true)
+  }else {
+    cb(null,false)
+  }
+}
+
+const storageConfig = multer.diskStorage({
+  destination : (req,file,cb) => {
+    cb(null,"images/uploads")
+
+  },
+  filename : (req,file,cb) => {
+    cb(null,Date.now()+"-"+file.originalname)
+  }
+
+})
+
 const adminRoutes = require("./routes/admin")
 const authRoutes = require("./routes/auth")
 const shopRoutes = require("./routes/shop");
@@ -25,12 +45,16 @@ const User = require("./model/user")
 
 const errorController = require("./controllers/error")
 
+
 const app = express();
 app.set('view engine', 'ejs')
 app.set('views', 'views')
 
 app.use(parser.urlencoded({extended : false}))
+app.use(multer({storage : storageConfig,fileFilter : fileFilter}).single("image"));
 app.use(express.static(path.join(__dirname, "public")))
+app.use("/images/uploads",express.static(path.join(__dirname, "images/uploads")))
+
 app.use(session({secret: 'the big bad wolf', resave : false, saveUninitialized : false,store : store}))
 
 //csrf should be afer session always and before request handlers

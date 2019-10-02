@@ -28,6 +28,7 @@ form {
 }
 
 .image img {
+  width: 20rem;
   height: 100%;
 }
 
@@ -186,7 +187,8 @@ form {
 }
 
 .card__image {
-  width: 100%;
+  width: 20rem;
+
 }
 
 .card__image img {

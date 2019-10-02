@@ -13,26 +13,26 @@ exports.addProduct = (req,res,next) => {
 
 }
 exports.postProduct = (req,res,next) => {
-    const {title,imageUrl,price,description} = req.body;
+    const {title,price,description} = req.body;
+    const image = req.file;
     const errors = validationResult(req);
-    if(!errors.isEmpty()){
+    if(!errors.isEmpty() || !image){
         return res.render('admin/edit-product',
         { pageTitle : "Add Product",
          path: "admin/add-product",
         product : {
             title : title,
-            imageUrl : imageUrl,
             price : price,
             description : description,
         },
         hasErrors : true,
-        errorMessage : errors.array()[0].msg,
-        validationError : errors.array(),
+        errorMessage : !image ? "File uploaded is not an image" : errors.array()[0].msg,
+        validationError : !image? [] : errors.array(),
         editable: false})
     }
     const product = new Product({
         title : title,
-        imageUrl : imageUrl,
+        imageUrl : image.path,
         price : price,
         description : description,
         userId : req.user,
@@ -103,7 +103,8 @@ exports.editProduct  = (req,res,next) => {
 
 
 exports.updateProduct = (req,res,next) => {
-    const {productId,title,imageUrl,price,description} = req.body;
+    const {productId,title,price,description} = req.body;
+    const image = req.file;
     const errors = validationResult(req)
     if(!errors.isEmpty()){
         return  res.status(422).render('admin/edit-product',
@@ -113,7 +114,6 @@ exports.updateProduct = (req,res,next) => {
             editable: true,
             product : {
                 title : title,
-                imageUrl : imageUrl,
                 price : price,
                 description : description,
                 _id : productId
@@ -127,7 +127,9 @@ exports.updateProduct = (req,res,next) => {
     }
     Product.findById(productId).then( product => {
         product.title = title;
-        product.imageUrl = imageUrl;
+        if(image){
+            product.imageUrl = image.path;
+        }
         product.price = price;
         product.description = description;
         return product.save()
