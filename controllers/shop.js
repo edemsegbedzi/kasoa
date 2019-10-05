@@ -37,14 +37,14 @@ exports.getCart = (req, res, next) => {
 
   req.user.populate('cart.items.productId').execPopulate().then(user => 
     {
-      res.render('shop/cart', {
+      return res.render('shop/cart', {
         path: '/cart',
         pageTitle: 'Your Cart',
         products: user.cart.items,
         isAuthenticated : req.session.isLoggedIn
       });
     }
-  )
+  ).catch(err => console.error(err))
   };
 
 exports.addToCart = (req, res, next) => {
