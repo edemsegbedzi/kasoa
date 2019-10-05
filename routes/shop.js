@@ -14,9 +14,11 @@ router.get("/cart",shopController.getCart)
 router.post("/cart",shopController.addToCart)
 router.post("/delete-cart-item",shopController.postCartDeleteProduct)
 router.get("/orders",shopController.getOrders)
-router.post("/create-order",shopController.postOrder)
+router.get("/orders/success",shopController.stripeCallback)
+
 router.get("/invoice/:orderId",shopController.getInvoice)
-// router.get("/checkout",shopController.getCheckout)
+router.get("/checkout",shopController.getCheckout)
+
 
 
 

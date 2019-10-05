@@ -1,0 +1,50 @@
+<%- include('../includes/head.ejs') %>
+<link rel="stylesheet" href="/css/cart.css">
+<script src="https://js.stripe.com/v3/"></script>
+
+</head>
+
+<body>
+    <%- include('../includes/navigation.ejs') %>
+    <main>
+        <% if (products.length > 0) { %>
+        <ul class="cart__item-list">
+            <% products.forEach(p => { %>
+            <li class="cart__item">
+                <p><%= p.productId.title %> (<%= p.quantity %>)</p>
+            </li>
+            <% }) %>
+        </ul>
+        <hr>
+        <h2 class="centered">Total: <%= total%> </h2>
+        <div class="centered">
+            <form action="/checkoutStripe" method="POST">
+                <input type="hidden" name="_csrf" value="<%= csrfToken%>">
+                <input type="hidden" name="stripeSession" value="<%= stripeSession%>">
+                <button class="btn" onclick="pay()" type="button"> Pay make we Go</button>
+            </form>
+        </div>
+        <script>
+            const pay = () => {
+                const stripe = Stripe('pk_test_hLZnP6pDjWkc7QbethASXWa700XiapIDb9');
+                    stripe.redirectToCheckout({
+                        // Make the id field from the Checkout Session creation API response
+                        // available to this file, so you can provide it as parameter here
+                        // instead of the {{CHECKOUT_SESSION_ID}} placeholder.
+                        sessionId: '<%=stripeSession.trim()%>'
+                    }).then(function (result) {
+                        console.error(result)
+                        // If `redirectToCheckout` fails due to a browser or network
+                        // error, display the localized error message to your customer
+                        // using `result.error.message`.
+                    });
+            }
+                    
+        
+                </script>
+       
+        <% } else { %>
+        <h1>No Products in Cart!</h1>
+        <% } %>
+    </main>
+    <%- include('../includes/end.ejs') %>

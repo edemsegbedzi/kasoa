@@ -1,9 +1,10 @@
 const fs = require("fs")
 const pdfDocument = require("pdfkit")
 
-
+const STRIPE_API_KEY =  process.env.STRIPE_API_KEY;
 const Product = require("../model/product")
 const Order = require("../model/order")
+const stripe = require('stripe')(STRIPE_API_KEY);
 
 
 exports.getProducts = (req,res,next) => {
@@ -58,17 +59,18 @@ exports.addToCart = (req, res, next) => {
     let fetchedCart ;
     let newquantity = 1;
 }
-exports.getOrders = (req, res ,next ) => {
-    Order.find({'user.userId' : req.user._id}).then((orders) => {
-      res.render("shop/orders",
-      {pageTitle: "My Cart",
-       path : "/orders", 
-       orders : orders,
-       isAuthenticated : req.session.isLoggedIn
-      });
-    }).catch(err => console.log(err))
+exports.getOrders = (req,res,next) => {
+  Order.find({'user.userId' : req.user._id}).then((orders) => {
+    res.render("shop/orders",
+    {pageTitle: "My Cart",
+     path : "/orders", 
+     orders : orders,
+     isAuthenticated : req.session.isLoggedIn
+    });
+  }).catch(err => console.log(err))
 }
-exports.postOrder = (req,res,next) => {
+
+exports.stripeCallback = (req,res,next) => {
   req.user.populate('cart.items.productId').execPopulate().then(user => 
     {   
     const products = user.cart.items.map(i => {
@@ -85,14 +87,46 @@ exports.postOrder = (req,res,next) => {
 }).then( () => {
    req.user.clearCart();
 }).then( () => {
-  res.redirect("/orders")
-})
+  Order.find({'user.userId' : req.user._id}).then((orders) => {
+    res.render("shop/orders",
+    {pageTitle: "My Cart",
+     path : "/orders", 
+     orders : orders,
+     isAuthenticated : req.session.isLoggedIn
+    });
+  }).catch(err => console.log(err))})
 }
 
 
 exports.getCheckout = (req,res,next) => {
-    res.render("shop/checkout", {pageTitle: "Checkout",path : "checkout"})
-}
+  req.user.populate('cart.items.productId').execPopulate().then(user => 
+    {
+      stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: [{
+          name: "Products from Kasoa",
+          description: user.cart.items.map(item => item.quantity + "( " +item.productId.title + ")").join(","),
+          images: ['https://images.unsplash.com/photo-1518729571365-9a891a9df2bd?ixlib=rb-1.2.1&q=85&fm=jpg&crop=entropy&cs=srgb'],
+          amount: user.cart.items.reduce((total,item)=> total += item.quantity * item.productId.price,0)*100,
+          currency: 'usd',
+          quantity: 1,
+        }],
+        success_url: 'http://localhost:3000/orders?session_id={CHECKOUT_SESSION_ID}',
+        cancel_url: 'http://localhost:3000/cart',
+      })
+      .then(session => {
+       res.render('shop/checkout', {
+        path: '/checkout',
+        pageTitle: 'Checkout',
+        products: user.cart.items,
+        total : user.cart.items.reduce((total,item)=> total += item.quantity * item.productId.price,0),
+        isAuthenticated : req.session.isLoggedIn,
+        stripeSession : session.id
+      });
+    }).catch(err => console.error(err))
+  })
+ }
+
 
 exports.getIndex = (req, res, next) => {
     Product.find()
