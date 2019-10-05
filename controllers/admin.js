@@ -142,10 +142,14 @@ exports.deleteProduct = (req,res,next) => {
     const productId = req.params.productId;
     Product.findById(productId).then( product => {
         if(!product){
-            throw(new Error("Product not Found"))
+           return res.status(500).json("Product not Found")
         }else {
             return fileHelper.deleteFile(product.imageUrl)
         }
     }).then(_ =>  Product.deleteOne({_id : productId , userId : req.user._id}))
-    .then( res.redirect("/admin/products"))
+    .then( _ => res.status(200).json({message : "succcess"}))
+    .catch(err => {
+        console.error(err);
+        return res.status(500);
+    });
 }
